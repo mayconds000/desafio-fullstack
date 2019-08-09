@@ -46,8 +46,7 @@ export default {
   /*
   ** Plugins to load before mounting the App
   */
-  plugins: [
-  ],
+  plugins: ["./plugins/axios.js", "./plugins/mixins/validation.js"],
   /*
   ** Nuxt.js dev-modules
   */
@@ -57,7 +56,11 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/axios',
   ],
+  axios: {
+    baseURL: "http://localhost:8080/api/"
+  },
   /*
   ** Build configuration
   */
