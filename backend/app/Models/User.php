@@ -26,6 +26,11 @@ class User extends Authenticatable implements JWTSubject
         'mother_name',
     ];
 
+    public function address()
+    {
+        return $this->hasOne(Address::class);
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *
