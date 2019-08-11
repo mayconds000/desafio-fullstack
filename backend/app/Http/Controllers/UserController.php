@@ -28,7 +28,7 @@ class UserController extends Controller
             $user = User::create($this->getUserData($request, $user->getFillable()));
 
             $address = new Address;
-            $address->fill($this->getAddressData($request, $address->getFillable()));
+            $address->fill($request->only($address->getFillable()));
 
             $user->address()->save($address);
 
@@ -46,7 +46,7 @@ class UserController extends Controller
 
     public function update(UpdateRequest $request, User $user)
     {
-        if ( ! $user->id) {
+        if (! $user->id) {
             return response()->json('Usuário não encontrado.', 404);
         }
 
@@ -56,13 +56,12 @@ class UserController extends Controller
             $user->update($this->getUserData($request, $user->getFillable()));
             
             if ($request->input('address')) {
-                $data = $this->getAddressData($request, $user->address()->getFillable());
-                $user->address->update($data);
+                $user->address->update($request->only($user->address()->getFillable()));
             }
 
             DB::commit();
 
-            return response()->json($user);
+            return new UserResource($user);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
@@ -74,6 +73,11 @@ class UserController extends Controller
     protected function getUserData($request, array $fillable)
     {
         $data = $request->only($fillable);
+
+        if (isset($data['birth_date'])) {
+            $date = \DateTimeImmutable::createFromFormat('d/m/Y', $data['birth_date']);
+            $data['birth_date'] = $date->format('Y-m-d');
+        }
             
         if (isset($data['password'])) {
             $data['password'] = bcrypt($data['password']);
@@ -82,15 +86,9 @@ class UserController extends Controller
         return $data;
     }
 
-    protected function getAddressData($request, array $fillable)
-    {
-        $data = $request->only('address');
-        return collect($data['address'])->only($fillable)->toArray();
-    }
-
     public function show(User $user)
     {
-        if ( ! $user->id) {
+        if (! $user->id) {
             return response()->json('Usuário não encontrado.', 404);
         }
 
@@ -103,7 +101,7 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function destroy(DeleteRequest $request, User $user) 
+    public function destroy(DeleteRequest $request, User $user)
     {
         try {
             $user->forceDelete();
