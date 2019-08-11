@@ -12,7 +12,10 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.5.4",
-    "nuxt": "^2.0.0"
+    "nuxt": "^2.0.0",
+    "vue-sweetalert2": "^2.1.1",
+    "vue-the-mask": "^0.11.1",
+    "vuelidate": "^0.7.4"
   },
   "devDependencies": {}
 }

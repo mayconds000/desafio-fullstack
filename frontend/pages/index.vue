@@ -3,9 +3,11 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between">
         <h1>Lista de Usuários</h1>
-        <button class="btn btn-primary">
-          +Add Usuário
-        </button>
+        <nuxt-link to="/register">
+          <button  class="btn btn-primary">
+            +Add Usuário
+          </button>
+        </nuxt-link>
       </div>
       <div class="card-body">
         <table class="table">
@@ -32,3 +34,16 @@
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  data () {
+    return {
+      list: []
+    }
+  },
+  mounted () {
+    
+  }
+}
+</script>
