@@ -1,5 +1,5 @@
 <template>
-  <div class="container col-md-6 col-lg-5 mt-5">
+  <div class="container col-md-6 mt-5">
     <h2>{{ isEdit ? 'Editar' : 'Cadastrar' }}</h2>
     <br>
     <form class="row mb-5" @submit.prevent="submit">
@@ -19,11 +19,12 @@
           <div class="form-group col-md-6">
             <label>Data de nascimento</label>
             <the-mask mask="##/##/####" :masked="true"
-              v-model="$v.form.birth_date.$model" 
+              v-model="$v.form.birth_date.$model"
               class="form-control"
               :class="{'is-invalid' : $v.form.birth_date.$error }"
             />
             <small class="form-text text-danger" v-if="errors.birth_date">{{ errors.birth_date && errors.birth_date[0] }}</small>
+            <small class="form-text text-danger" v-if="$v.form.birth_date.$dirty && !$v.form.birth_date.validDate">O campo data de nascimento deve conter uma data válida!</small>
             <small class="form-text text-danger" v-if="$v.form.birth_date.$dirty && !$v.form.birth_date.required">O campo data de nascimento é obrigatório</small>
           </div>
         </div>
@@ -67,7 +68,8 @@
         <label>Cep</label>
         <the-mask 
           mask="#####-###" :masked="true"
-          v-model="$v.form.cep.$model" 
+          v-model.trim.lazy="form.cep" 
+          @input.native="setCep($event.target.value)"
           class="form-control" 
           :class="{'is-invalid' : $v.form.cep.$error }"
         />
@@ -157,6 +159,9 @@
           class="form-control" 
           :class="{'is-invalid' : $v.form.password.$error }"
           v-model="$v.form.password.$model">
+        <small id="passwordHelpBlock" class="form-text text-muted">
+            Senha deve conter entre 6 e 20 caracteres
+        </small>
         <small class="form-text text-danger" v-if="errors.password">{{ errors.password && errors.password[0] }}</small>
         <small class="form-text text-danger" v-if="$v.form.password.$dirty && !$v.form.password.required">O campo senha é obrigatório</small>
         <small class="form-text text-danger" v-if="$v.form.password.$dirty && !$v.form.password.minLength">O campo senha deve conter no mínimo {{$v.form.password.$params.minLength.min}} caracteres</small>
@@ -184,6 +189,18 @@
 import {TheMask} from 'vue-the-mask'
 import { required, minLength, maxLength, email } from "vuelidate/lib/validators";
 
+const validDate = (value) => {
+  if (value.length !== 10) {
+    return false
+  }
+
+  const [day, month, year] = value.split('/')
+  if (month > 12) return false
+  if (day == 0 || day > 31) return false
+  const date = new Date(year, month - 1, day)
+  return date.getDate() == day
+}
+
 export default {
   data () {
     return {
@@ -210,6 +227,11 @@ export default {
   },
   mounted () {
     const user = this.$store.state.user.user
+    
+    if (user === null && user === undefined) {
+      return
+    }
+    
     this.user = user
 
     if (Object.keys(user).length === 0 && user.constructor === Object) {
@@ -221,6 +243,19 @@ export default {
     this.isEdit = true
   },
   methods: {
+    setCep (value) {
+      this.form.cep = value
+      this.$v.form.cep.$touch()
+      if (value.length === 9) {
+        this.$axios.get(`https://viacep.com.br/ws/${value}/json/`).then(response => {
+          this.form.street = response.data.logradouro
+          this.form.complement = response.data.complemento
+          this.form.neighborhood = response.data.bairro
+          this.form.city = response.data.localidade
+          this.form.state = response.data.uf
+        })
+      }
+    },
     submit () {
       this.$v.$touch()
       if (this.$v.$invalid) {
@@ -291,6 +326,8 @@ export default {
         },
         birth_date: {
           required,
+          minLength: minLength(10),
+          validDate
         },
         password: {
           required,

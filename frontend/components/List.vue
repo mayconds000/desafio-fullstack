@@ -2,11 +2,9 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between">
       <h3>Lista de Usuários</h3>
-      <nuxt-link to="/register">
-        <button  class="btn btn-primary">
-          +Add Usuário
-        </button>
-      </nuxt-link>
+      <button class="btn btn-primary" @click="set({})">
+        <font-awesome-icon :icon="['fas', 'plus']"/> Add Usuário
+      </button>
     </div>
     <div class="card-body">
       <table class="table table-sm table-hover" v-if="users">
@@ -26,7 +24,7 @@
             <td>{{user.email}}</td>
             <td>{{user.phone}}</td>
             <td>
-              <button class="btn btn-sm btn-outline-secondary" @click.prevent="edit(user)">
+              <button class="btn btn-sm btn-outline-secondary" @click.prevent="set(user)">
                 <font-awesome-icon :icon="['fas', 'edit']"/>
               </button>
               <button class="btn btn-sm btn-outline-secondary" @click.prevent="remove(user)">
@@ -49,6 +47,9 @@ export default {
     }
   },
   methods: {
+    set (user) {
+      this.$store.commit('user/SET', user)
+    },
     remove (user) {
       this.$swal({
         title: 'Tem certeza que deseja deletar este usuário?',
@@ -71,10 +72,6 @@ export default {
           })
         })
       })
-    },
-    edit (user) {
-      console.log('edit', user)
-      this.$store.commit('user/SET', user)
     }
   }
 }
