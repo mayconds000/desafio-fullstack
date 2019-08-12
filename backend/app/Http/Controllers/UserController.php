@@ -94,7 +94,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $users = User::with(['address'])->orderBy('updated_at', 'desc')->get();
+        $users = User::with(['address'])->orderBy('updated_at', 'desc')->paginate(5);
         return UserResource::collection($users);
         return response()->json($users);
     }

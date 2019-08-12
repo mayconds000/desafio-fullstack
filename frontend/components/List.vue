@@ -34,19 +34,50 @@
           </tr>
         </tbody>
       </table>
-      <h4 v-else>Nenhum usuário cadastrado</h4>
+
+      <div class="row my-4">
+        <div class="col-md-8">
+          <nav>
+            <ul class="pagination">
+              <li class="page-item" :class="{disabled: ! pagination.first_link}" >
+                <a href="#" class="page-link" @click="getUsers(pagination.first_link)">&laquo;</a>
+              </li>
+              <li class="page-item" :class="{disabled: ! pagination.prev_link}" >
+                <a href="#" class="page-link" @click="getUsers(pagination.prev_link)">&lt;</a>
+              </li>
+              <li v-for="n in pagination.last_page" :key="n" :class="{active: pagination.current_page == n}" class="page-item">
+                <a href="#" class="page-link" @click="getUsers(pagination.path_page + n)">{{n}}</a>
+              </li>
+              <li  class="page-item" :class="{disabled: !pagination.next_link}">
+                <a href="#" class="page-link" @click="getUsers(pagination.next_link)">&gt;</a>
+              </li>
+              <li  class="page-item" :class="{disabled: !pagination.last_link}">
+                <a href="#" class="page-link" @click="getUsers(pagination.last_link)">&raquo;</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col-md-4">
+          Total: {{ pagination.total_page}}
+        </div>
+      </div>
+      <h4 v-if="!users">Nenhum usuário cadastrado</h4>
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
-  computed: {
-    users () {
-      return this.$store.state.user.list
-    }
-  },
+  computed: mapGetters({
+    users: 'user/list',
+    pagination: 'user/pagination'
+  }), 
   methods: {
+    getUsers (page) {
+      this.$emit('getUsers', page)
+    },
     set (user) {
       this.$store.commit('user/SET', user)
     },

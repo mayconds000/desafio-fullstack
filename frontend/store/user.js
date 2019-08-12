@@ -1,14 +1,24 @@
 export const state = () => ({
   list: [],
+  pagination: {},
   user: null
 })
 
 export const getters = {
   list (state) {
-    return state.list
+    const list = state.list.map(item => item)
+    list.sort((item1, item2) => {
+      const date1 = new Date(item1.updated_at)
+      const date2 = new Date(item2.updated_at)
+      return date2 - date1
+    })
+    return list
   },
   user (state) {
     return state.user
+  },
+  pagination (state) {
+    return state.pagination
   }
 }
 
@@ -38,5 +48,8 @@ export const mutations = {
   },
   SET_LIST (state, users) {
     state.list = users
+  },
+  SET_PAGINATION (state, pagination) {
+    state.pagination = pagination
   }
 }
