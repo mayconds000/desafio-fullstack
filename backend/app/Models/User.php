@@ -30,6 +30,12 @@ class User extends Authenticatable
         return $this->hasOne(Address::class);
     }
 
+    public function getBirthDateAttribute($value)
+    {
+        if ( ! $value) return $value;
+        return (new \DateTimeImmutable($value))->format('d/m/Y');
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *

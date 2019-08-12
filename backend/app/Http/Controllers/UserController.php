@@ -14,12 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api')->except(['register']);
-    }
-
-    public function register(StoreRequest $request)
+    public function store(StoreRequest $request)
     {
         try {
             DB::beginTransaction();
@@ -46,17 +41,19 @@ class UserController extends Controller
 
     public function update(UpdateRequest $request, User $user)
     {
-        if (! $user->id) {
+        if ( ! $user->id) {
             return response()->json('Usuário não encontrado.', 404);
         }
 
         try {
             DB::beginTransaction();
             
-            $user->update($this->getUserData($request, $user->getFillable()));
+            $data = $this->getUserData($request, $user->getFillable());
+            unset($data['email']);
+            $user->update($data);
             
             if ($request->input('address')) {
-                $user->address->update($request->only($user->address()->getFillable()));
+                $user->address->update($request->only($user->address->getFillable()));
             }
 
             DB::commit();
@@ -97,15 +94,20 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $users = User::orderBy('updated_at', 'desc')->get();
+        $users = User::with(['address'])->orderBy('updated_at', 'desc')->get();
+        return UserResource::collection($users);
         return response()->json($users);
     }
 
-    public function destroy(DeleteRequest $request, User $user)
+    public function destroy(User $user)
     {
+        if ( ! isset($user->id)) {
+            return response()->json('Usuário não econtrado.', 404);
+        }
+
         try {
             $user->forceDelete();
-            return response()->json('Usuário deletado com sucesso.');
+            return new UserResource($user);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json('Não foi possível deletar o usuário.', 422);

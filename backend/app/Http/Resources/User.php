@@ -17,13 +17,14 @@ class User extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'birth_date' => $this->birth_date,
             'email' => $this->email,
             'phone' => $this->phone,
             'father_name' => $this->father_name,
             'mother_name' => $this->mother_name,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'address' => $this->address
+            'address' => new Address($this->address)
         ];
     }
 }
