@@ -1,6 +1,6 @@
 <template>
   <div class="container col-md-6 col-lg-5 mt-5">
-    <h2>{{pageTitle}}</h2>
+    <h2>{{ isEdit ? 'Editar' : 'Cadastrar' }}</h2>
     <br>
     <form class="row mb-5" @submit.prevent="submit">
       <div class="form-group col-12">
@@ -123,7 +123,7 @@
           :class="{'is-invalid' : $v.form.city.$error }"
           v-model="$v.form.city.$model"
         />
-        <small class="form-text text-danger" [v-if="errors.city">{{ errors.city && errors.city[0] }}</small>
+        <small class="form-text text-danger" v-if="errors.city">{{ errors.city && errors.city[0] }}</small>
         <small class="form-text text-danger" v-if="$v.form.city.$dirty && !$v.form.city.required">O campo cidade é obrigatório</small>
         <small class="form-text text-danger" v-if="$v.form.city.$dirty && !$v.form.city.maxLength">O campo cidade deve conter no máximo {{$v.form.city.$params.maxLength.max}} caracters.</small>
       </div>
@@ -144,7 +144,9 @@
         <input type="email" 
           class="form-control" 
           :class="{'is-invalid' : $v.form.email.$error }"
-          v-model="$v.form.email.$model">
+          v-model="$v.form.email.$model"
+          :disabled="form.id != null && form.id !== undefined"
+        />
         <small class="form-text text-danger" v-if="errors.email">{{ errors.email && errors.email[0] }}</small>
         <small class="form-text text-danger" v-if="$v.form.email.$dirty && !$v.form.email.required">O campo email é obrigatório</small>
         <small class="form-text text-danger" v-if="$v.form.email.$dirty && !$v.form.email.email">O email informado deve ser um email válido</small>
@@ -185,9 +187,9 @@ import { required, minLength, maxLength, email } from "vuelidate/lib/validators"
 export default {
   data () {
     return {
-      pageTitle: 'Cadastrar',
       loader: false,
       isEdit: false,
+      user: null,
       form: {
         name: null,
         email: null,
@@ -206,39 +208,69 @@ export default {
       }
     }
   },
+  mounted () {
+    const user = this.$store.state.user.user
+    this.user = user
+
+    if (Object.keys(user).length === 0 && user.constructor === Object) {
+      this.isEdit = false
+      return 
+    }
+
+    this.form = { ...this.form, ...user, ...user.address }
+    this.isEdit = true
+  },
   methods: {
     submit () {
       this.$v.$touch()
-      
-      if (this.$v.invalid) {
+      if (this.$v.$invalid) {
         return 
       }
-
       this.loader = true
-
       if (this.isEdit) {
-        this.$axios.$post(`update/${this.user.id}`, this.form) .then(response => {
-
+        this.$axios.$put(`users/${this.user.id}`, this.form) .then(response => {
           this.loader = false
-          // show message
-          this.$router.push('/')
+          // const user = {
+          //   ...this.user,
+          //   address: {
+          //     cep: this.form.cep,
+          //     street: this.form.street,
+          //     number: this.form.number,
+          //     complement: this.form.complement,
+          //     neighborhood: this.form.neighborhood,
+          //     city: this.form.city,
+          //     state: this.form.state
+          //   }
+          // }
+          this.$store.commit('user/UPDATE', response.data)
+          this.$swal({
+            title: 'Usuário alterado com sucesso',
+            type: 'success',
+            button: 'Ok'
+          }).then(() => {
+            this.$store.commit('user/CLEAR')
+          })
         }).catch(response => {
-          
           this.loader = false
-          // show message
+          const title = typeof response === 'string' ? response : 'Não foi possível atualizar o anúncio'
+          this.$swal({
+            title,
+            type: 'error',
+            button: 'Ok'
+          })
         })
         return 
       }
 
-      this.$axios.$post('register', this.form) .then(response => {
+      this.$axios.$post('users', this.form).then(response => {
         this.loader = false
-        const _this = this
+        this.$store.commit('user/ADD', response.data)
         this.$swal({
           title: 'Usuário cadastrado com sucesso',
-          icon: 'success',
+          type: 'success',
           button: 'Ok'
         }).then(() => {
-          _this.$router.push('/')
+          this.$store.commit('user/CLEAR')
         })
       })
     }
