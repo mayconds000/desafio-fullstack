@@ -14,8 +14,11 @@
           </div>
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+        <div class="mt-5">Login: admin@mail.com</div>
+        <div>senha: supersecret</div>
       </div>
     </div>
+    
   </div>
 </template>
 
