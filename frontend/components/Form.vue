@@ -188,6 +188,7 @@
 <script>
 import {TheMask} from 'vue-the-mask'
 import { required, minLength, maxLength, email } from "vuelidate/lib/validators";
+import Axios from 'axios'
 
 const validDate = (value) => {
   if (value.length !== 10) {
@@ -206,7 +207,7 @@ export default {
     return {
       loader: false,
       isEdit: false,
-      user: null,
+      selectedUser: null,
       form: {
         name: null,
         email: null,
@@ -232,7 +233,7 @@ export default {
       return
     }
     
-    this.user = user
+    this.selectedUser = user
 
     if (Object.keys(user).length === 0 && user.constructor === Object) {
       this.isEdit = false
@@ -247,7 +248,10 @@ export default {
       this.form.cep = value
       this.$v.form.cep.$touch()
       if (value.length === 9) {
-        this.$axios.get(`https://viacep.com.br/ws/${value}/json/`).then(response => {
+        Axios.get(`https://viacep.com.br/ws/${value}/json/`).then(response => {
+          
+          if (response.data.erro) return
+
           this.form.street = response.data.logradouro
           this.form.complement = response.data.complemento
           this.form.neighborhood = response.data.bairro
@@ -263,7 +267,7 @@ export default {
       }
       this.loader = true
       if (this.isEdit) {
-        this.$axios.$put(`users/${this.user.id}`, this.form) .then(response => {
+        this.$axios.$put(`users/${this.selectedUser.id}`, this.form) .then(response => {
           this.loader = false
           // const user = {
           //   ...this.user,

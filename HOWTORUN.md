@@ -14,7 +14,7 @@ após averiguado a inexistencia dos containers
 entre na raiz do projeto desafio-fullstack e execute os comandos abaixo
 
 ```sh
-  sudo chown -R ${USER}:www-data backend
+  sudo chown -R www-data:www-data backend
   sudo chmod -R ug+rwx backend/storage backend/bootstrap/cache
   docker-compose up -d
   docker exec php cp .env.example .env
