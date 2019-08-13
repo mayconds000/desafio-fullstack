@@ -50,7 +50,7 @@ export default {
   /*
   ** Plugins to load before mounting the App
   */
-  plugins: ["./plugins/axios.js", "./plugins/mixins/validation.js", "./plugins/vuelidate.js"],
+  plugins: ["./plugins/axios.js", "./plugins/mixins/validation.js", "./plugins/vuelidate.js", "./plugins/mixins/user.js"],
   /*
   ** Nuxt.js dev-modules
   */
@@ -60,6 +60,7 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/auth',
     '@nuxtjs/axios',
     'vue-sweetalert2/nuxt',
     [
@@ -78,6 +79,19 @@ export default {
       }
     ]
   ],
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: { url: '/auth/login', method: 'post', propertyName: 'meta.token' },
+          user: { url: '/auth/me', method: 'get', propertyName: 'data' },
+          logout: { url: '/auth/logout', method: 'post' }
+        },
+        // tokenRequired: true,
+        // tokenType: 'bearer'
+      }
+    }
+  },
   axios: {
     baseURL: "http://localhost:8080/api/"
   },
